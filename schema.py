@@ -155,7 +155,7 @@ class OverviewCluster(SRBIBaseModel):
 class FundingCluster(SRBIBaseModel):
     total_raised: Optional[str] = None
     last_round_amount: Optional[str] = None
-    last_round_date: Optional[str] = None
+    last_round_date: Optional[str] = Field(None, description="Date of the last funding round. MUST be in YYYY-MM-DD format.")
     lead_investors: list[str] = Field(default_factory=list)
     pe_backed: Optional[bool] = None
     source_urls: list[str] = Field(default_factory=list)
@@ -257,6 +257,7 @@ class ReportSection(SRBIBaseModel, Generic[T]):
 
 
 class CompanyReport(SRBIBaseModel):
+    schema_version: str = Field(default="1.0", description="Version of the output schema")
     company_id: str
     generated_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()

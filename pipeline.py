@@ -123,7 +123,10 @@ def _read_products() -> list[str]:
     if not products_dir.exists():
         return []
     profiles = []
-    for path in sorted(products_dir.glob("*.md")):
+    # Reads JSON or MD depending on what you have in the folder
+    for path in sorted(products_dir.glob("*.*")):
+        if path.suffix not in [".md", ".json"]:
+            continue
         try:
             profiles.append(path.read_text(encoding="utf-8"))
         except Exception as exc:
@@ -343,13 +346,18 @@ def node_chunk(state: PipelineState) -> dict:
 def node_embed(state: PipelineState) -> dict:
     logger.info("Running node_embed")
     company_id = state["input"].company_id
-    os.environ["INDICES_DIR"] = settings.INDICES_DIR
-    cached_index, cached_metadata = load_index(company_id)
+    
+    # 🚨 FIX: Explicitly passing settings.INDICES_DIR to load_index
+    cached_index, cached_metadata = load_index(company_id, settings.INDICES_DIR)
+    
     if cached_index is not None and cached_metadata is not None:
         return {"faiss_index": cached_index, "faiss_metadata": cached_metadata}
 
     index, metadata_store = build_index(state.get("chunks", []))
-    save_index(index, metadata_store, company_id)
+    
+    # 🚨 FIX: Explicitly passing settings.INDICES_DIR to save_index
+    save_index(index, metadata_store, company_id, settings.INDICES_DIR)
+    
     return {"faiss_index": index, "faiss_metadata": metadata_store}
 
 
@@ -374,11 +382,11 @@ def node_extract(state: PipelineState) -> dict:
             extraction_results[cluster_name] = extract_scale(context, settings.MAX_EXTRACTION_RETRIES)
         elif cluster_name == "capacity_gaps":
             extraction_results[cluster_name] = extract_capacity_gaps(
-                context, product_context=product_context, settings.MAX_EXTRACTION_RETRIES
+                context, product_context=product_context, max_retries=settings.MAX_EXTRACTION_RETRIES
             )
         elif cluster_name == "pain_points":
             extraction_results[cluster_name] = extract_pain_points(
-                context, product_context=product_context, settings.MAX_EXTRACTION_RETRIES
+                context, product_context=product_context, max_retries=settings.MAX_EXTRACTION_RETRIES
             )
         elif cluster_name == "triggers":
             extraction_results[cluster_name] = extract_triggers(context, settings.MAX_EXTRACTION_RETRIES)
