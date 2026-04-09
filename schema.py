@@ -153,11 +153,16 @@ class OverviewCluster(SRBIBaseModel):
 
 
 class FundingCluster(SRBIBaseModel):
-    total_raised: Optional[str] = None
+    """
+    Summarizes all corporate funding and investment information.
+    CRITICAL INSTRUCTION: You MUST return exactly ONE single object. 
+    Do NOT return a list or array of multiple funding rounds. Combine all data into this single object.
+    """
+    total_raised: Optional[str] = Field(None, description="Total money raised across all rounds")
     last_round_amount: Optional[str] = None
     last_round_date: Optional[str] = Field(None, description="Date of the last funding round. MUST be in YYYY-MM-DD format.")
-    lead_investors: list[str] = Field(default_factory=list)
     pe_backed: Optional[bool] = None
+    lead_investors: list[str] = Field(default_factory=list)
     source_urls: list[str] = Field(default_factory=list)
 
 
