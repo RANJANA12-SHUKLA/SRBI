@@ -81,7 +81,8 @@ An AI infrastructure upgrade for talent acquisition teams. It replaces manual, i
   * *The Gap Solved:* Eliminates the manual screening bottleneck and developer dependency for technical rounds, drastically reducing the burden on internal teams......
 
 ```
-
+### sample output
+see this [jsonfile](full_leadsquared_report.json)
 
 ## Flow
 
