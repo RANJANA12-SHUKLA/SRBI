@@ -33,6 +33,56 @@ If you need the typed Pydantic `CompanyReport` object, use `run_srbi_orchestrato
 
 The company JSON may be either a list of source records or an object with `company_id`, `company_domain`, and one of `sources`, `files`, `documents`, `records`, or `pages`. Each source record should contain `url`, `scraped_at`, and `text` or `raw_text`.
 
+## Data format
+### company details
+```
+{
+    "company_id":  "leadsquared",
+    "company_domain":  "leadsquared.com",
+    "sources":  [
+                    {
+                        "url":  "https://www.leadsquared.com/about/",
+                        "scraped_at":  "2026-04-08T11:14:20.803375",
+                        "text":  "AI-Powered CRM For Sales, Service \u0026 Marketing | LeadSquared\nBuilt for\nhigh-impact\nsales teams\nmarketing teams\nservice teams\nfield teams\nUnite sales, marketing, field, and service teams on one powerful...."
+                    },
+                    {
+                        "url":  "https://techcrunch.com/2022/06/21/daily-crunch-with-153m-series-c-leadsquared-becomes-indias-newest-unicorn/",
+                        "scraped_at":  "2026-04-08T11:14:23.389260",
+                        "text":  "LeadSquared becomes India\u0027s newest unicorn\n–:–:–:–\nTHIS WEEK ONLY: Save close to $500 on your Disrupt pass. ......"
+                    },
+                    {
+                        "url":  "https://www.leadsquared.com/careers/",
+                        "scraped_at":  "2026-04-08T11:14:24.532778",
+                        "text":  "Work With Us | LeadSquared Careers\nCome Join Us in Our Mission of Simplifying Sales Execution\nWe,....."
+                    },
+                    {
+                        "url":  "https://help.leadsquared.com/news/universal-data-sync-uds-update-march-26/",
+                        "scraped_at":  "2026-04-08T11:14:25.632751",
+                        "text":  "Universal Data Sync (UDS) Update - March \u002726 - Help \u0026 Support\nHome\nNews\nUniversal Data Sync (UDS) Update – March ’26\nUDS Integration Assistant\nThe UDS Integration Assistant is now available across the UDS interface....."
+                    }
+                ]
+}
+```
+
+### product details
+```
+# Product Name: InterviewGod.ai
+
+## Core Value Proposition
+An AI infrastructure upgrade for talent acquisition teams. It replaces manual, interviewer-dependent hiring processes with consistent, auditable, and bias-reduced AI evaluations at scale. .....
+
+## Ideal Customer Profile (ICP) & Target Personas
+* **Company Profile:** Fast-growing enterprises, post-funding startups, and companies marching toward IPO readiness that process high volumes of candidates.
+* **Target Industries:** Technology, Manufacturing, and Logistics & Supply Chain......
+
+## Key Features & How They Map to Customer Gaps
+
+* **Agentic Assessment & AI Interviews:** * *The Feature:* Conducts real-time conversational interviews and role-specific coding rounds, dynamically evaluating responses and instantly scoring them.
+  * *The Gap Solved:* Eliminates the manual screening bottleneck and developer dependency for technical rounds, drastically reducing the burden on internal teams......
+
+```
+
+
 ## Flow
 
 1. `srbi_orchestrator` loads the single company JSON and product `.md`/`.txt` file.
