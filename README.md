@@ -34,7 +34,7 @@ If you need the typed Pydantic `CompanyReport` object, use `run_srbi_orchestrato
 The company JSON may be either a list of source records or an object with `company_id`, `company_domain`, and one of `sources`, `files`, `documents`, `records`, or `pages`. Each source record should contain `url`, `scraped_at`, and `text` or `raw_text`.
 
 ## Data format
-### company details
+### company scrapped data
 ```
 {
     "company_id":  "leadsquared",
