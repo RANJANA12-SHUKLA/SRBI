@@ -3,11 +3,24 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import retrieval
 from retrieval import build_index, retrieve
 from schema import ChunkWithMeta
 
 
 def test_retrieve_returns_relevant_chunks_and_honors_source_filter():
+    def fake_embed_texts(texts):
+        vectors = []
+        for text in texts:
+            lowered = text.lower()
+            if "visitor" in lowered or "plants" in lowered or "manual" in lowered:
+                vectors.append([1.0, 0.0, 0.0, 0.0])
+            else:
+                vectors.append([0.0, 1.0, 0.0, 0.0])
+        return vectors
+
+    retrieval.embed_texts = fake_embed_texts
+
     chunks = []
     for idx in range(10):
         chunks.append(

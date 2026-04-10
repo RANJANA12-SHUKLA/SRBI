@@ -1,0 +1,305 @@
+{
+  "schema_version": "1.0",
+  "company_id": "leadsquared",
+  "generated_at": "2026-04-10T10:28:06.335190+00:00",
+  "overview": {
+    "data": {
+      "company_name": "LeadSquared",
+      "stage": "Unicorn",
+      "founded_year": null,
+      "headquarters": null,
+      "address": null,
+      "industry": null,
+      "employees": null,
+      "revenue": null,
+      "revenue_cagr": null,
+      "business_description": "LeadSquared operates as a customer relationship management and business automation platform. The company provides CRM solutions, lead management, and sales management tools across multiple industries including financial services, manufacturing, automotive, healthcare, education, and digital native businesses. Following a $153 million Series C funding round, the company achieved unicorn status with a $1 billion valuation and is expanding its product capabilities with sales performance analytics and application processing digitization tools.",
+      "source_urls": [
+        "https://www.leadsquared.com/about/",
+        "https://techcrunch.com/2022/06/21/daily-crunch-with-153m-series-c-leadsquared-becomes-indias-newest-unicorn/",
+        "https://www.leadsquared.com/careers/"
+      ]
+    },
+    "section_confidence": "LOW",
+    "primary_sources_count": 2,
+    "secondary_sources_count": 1,
+    "inferred_count": 0
+  },
+  "funding": {
+    "data": {
+      "total_raised": null,
+      "last_round_amount": "$153 million",
+      "last_round_date": "2022-06-21",
+      "pe_backed": null,
+      "lead_investors": [
+        "Westbridge Capital"
+      ],
+      "source_urls": [
+        "https://techcrunch.com/2022/06/21/daily-crunch-with-153m-series-c-leadsquared-becomes-indias-newest-unicorn/"
+      ]
+    },
+    "section_confidence": "MEDIUM",
+    "primary_sources_count": 0,
+    "secondary_sources_count": 1,
+    "inferred_count": 0
+  },
+  "scale": {
+    "data": {
+      "employees": null,
+      "revenue": null,
+      "revenue_cagr": null,
+      "facilities": null,
+      "geographies": [
+        "US",
+        "India",
+        "Indonesia",
+        "UAE"
+      ],
+      "source_urls": [
+        "https://www.leadsquared.com/careers/",
+        "https://www.leadsquared.com/about/"
+      ]
+    },
+    "section_confidence": "LOW",
+    "primary_sources_count": 2,
+    "secondary_sources_count": 0,
+    "inferred_count": 0
+  },
+  "capacity_gaps": {
+    "data": {
+      "gaps": [
+        {
+          "description": "Product development and R&D capacity expansion needs to support broadened product features and analytics capabilities",
+          "evidence_quote": "Company just achieved unicorn status with $153M funding specifically earmarked for product expansion including sales performance analytics and digitization tools. This represents a significant technology development initiative that will likely require additional engineering and product development capacity beyond current capabilities.",
+          "source_type": "INFERRED"
+        },
+        {
+          "description": "Scaling infrastructure and operational systems to support unicorn-level growth expectations",
+          "evidence_quote": "Recent unicorn valuation and major funding round creates immediate pressure to scale operations, systems, and processes to meet growth expectations typical of billion-dollar valuations. This is further supported by their multi-geography presence requiring coordinated scaling.",
+          "source_type": "INFERRED"
+        }
+      ],
+      "source_urls": [
+        "https://techcrunch.com/2022/06/21/daily-crunch-with-153m-series-c-leadsquared-becomes-indias-newest-unicorn/",
+        "https://www.leadsquared.com/careers/"
+      ]
+    },
+    "section_confidence": "MEDIUM",
+    "primary_sources_count": 1,
+    "secondary_sources_count": 1,
+    "inferred_count": 2
+  },
+  "pain_points": {
+    "data": {
+      "pain_points": [
+        {
+          "description": "Manual process overhead reducing team efficiency and response speed",
+          "evidence_quote": "Reduces manual work, and increases my response speed.",
+          "source_type": "PRIMARY"
+        },
+        {
+          "description": "Manual processes consuming significant time and resources across sales operations",
+          "evidence_quote": "Automations helped us cut 70% of manual processes for our sales team. They can now focus just on conversations.",
+          "source_type": "PRIMARY"
+        },
+        {
+          "description": "Hiring and talent acquisition pressures to rapidly scale teams across multiple geographies",
+          "evidence_quote": "Multiple signals support this: (1) Company operates across 4 geographies (US, India, Indonesia, UAE), (2) Just raised $153M suggesting aggressive growth plans, (3) Active hiring with careers page emphasizing mission and ownership, (4) Unicorn status creates pressure for rapid team scaling to justify valuation.",
+          "source_type": "INFERRED"
+        }
+      ],
+      "source_urls": [
+        "https://www.leadsquared.com/about/",
+        "https://techcrunch.com/2022/06/21/daily-crunch-with-153m-series-c-leadsquared-becomes-indias-newest-unicorn/",
+        "https://www.leadsquared.com/careers/"
+      ]
+    },
+    "section_confidence": "HIGH",
+    "primary_sources_count": 2,
+    "secondary_sources_count": 1,
+    "inferred_count": 1
+  },
+  "recent_triggers": {
+    "data": {
+      "triggers": [
+        {
+          "date": "June 21, 2022",
+          "event": "LeadSquared raised $153 million in Series C funding round achieving $1 billion valuation and unicorn status",
+          "significance": "Major funding milestone - became India's newest unicorn, led by Westbridge Capital. Company is using funds to broaden product with new features including sales performance analytics and suite of tools to digitize application processing",
+          "source_type": "SECONDARY"
+        }
+      ],
+      "source_urls": [
+        "https://techcrunch.com/2022/06/21/daily-crunch-with-153m-series-c-leadsquared-becomes-indias-newest-unicorn/"
+      ]
+    },
+    "section_confidence": "MEDIUM",
+    "primary_sources_count": 0,
+    "secondary_sources_count": 1,
+    "inferred_count": 0
+  },
+  "offering_fit": {
+    "data": {
+      "matched_products": [
+        {
+          "product_id": "interviewgod-ai",
+          "product_name": "InterviewGod.ai",
+          "fit_rationale": "LeadSquared operates across 4 geographies and just raised $153M for aggressive expansion, creating significant hiring capacity pressures. Their company culture emphasizes entrepreneurial ownership and rapid impact, indicating need for high-volume, quality talent acquisition. As a unicorn-stage tech company with manual process reduction focus, they need scalable, bias-reduced hiring infrastructure to support rapid team scaling.",
+          "evidence_quote": "Multiple signals support this: (1) Company operates across 4 geographies (US, India, Indonesia, UAE), (2) Just raised $153M suggesting aggressive growth plans, (3) Active hiring with careers page emphasizing mission and ownership, (4) Unicorn status creates pressure for rapid team scaling to justify valuation.",
+          "signal_source_type": "INFERRED"
+        }
+      ],
+      "why_now_narrative": "LeadSquared just achieved unicorn status with $153M in fresh funding earmarked for product expansion and analytics capabilities, creating immediate pressure to rapidly scale engineering and product teams across their 4-geography footprint. As a post-funding growth-stage company, they need to hire at scale while maintaining the entrepreneurial culture and quality standards that drove their success.",
+      "entry_points": [
+        {
+          "role_title": "CEO/Founder",
+          "name": null,
+          "decision_power": "Ultimate budget authority and strategic decision maker for major infrastructure investments supporting unicorn-level scaling",
+          "rationale": "Direct accountability for achieving growth targets that justify $1B valuation, with hiring velocity being critical to product expansion roadmap"
+        },
+        {
+          "role_title": "CHRO",
+          "name": null,
+          "decision_power": "Owns talent acquisition strategy and HR technology stack decisions for multi-geography scaling",
+          "rationale": "Responsible for building hiring infrastructure to support aggressive headcount growth across US, India, Indonesia, and UAE markets"
+        }
+      ],
+      "operational_intelligence": {
+        "tags": [
+          "unicorn-stage",
+          "multi-geography",
+          "post-funding",
+          "tech-company",
+          "crm-platform",
+          "rapid-scaling"
+        ],
+        "facts": [
+          {
+            "label": "Stage",
+            "value": "Unicorn ($1B valuation)"
+          },
+          {
+            "label": "Recent Funding",
+            "value": "$153M Series C (June 2022)"
+          },
+          {
+            "label": "Lead Investor",
+            "value": "Westbridge Capital"
+          },
+          {
+            "label": "Geographies",
+            "value": "4 markets: US, India, Indonesia, UAE"
+          },
+          {
+            "label": "Industry Focus",
+            "value": "CRM/Sales automation platform"
+          },
+          {
+            "label": "Growth Priority",
+            "value": "Product expansion & analytics capabilities"
+          },
+          {
+            "label": "Culture",
+            "value": "Entrepreneurial ownership model"
+          },
+          {
+            "label": "Manual Processes",
+            "value": "Actively reducing across operations"
+          }
+        ]
+      },
+      "additional_intelligence": {
+        "title": "Talent Intelligence",
+        "tags": [
+          "hiring-velocity",
+          "multi-geo-scaling",
+          "tech-talent",
+          "unicorn-pressure"
+        ],
+        "bullets": [
+          "Post-unicorn companies typically need 3-5x hiring velocity to justify valuations and meet investor growth expectations",
+          "Multi-geography presence (US, India, Indonesia, UAE) creates coordination complexity for standardized hiring processes",
+          "Company culture emphasizes individual entrepreneurial impact, requiring quality talent assessment beyond traditional screening",
+          "Fresh $153M funding for product expansion directly translates to aggressive engineering and product team hiring needs",
+          "Manual process reduction focus across operations suggests openness to hiring automation and efficiency tools"
+        ]
+      },
+      "what_we_supply": [
+        "AI-powered hiring infrastructure to scale quality talent acquisition across 4 geographies without proportional HR staff increases",
+        "Standardized, bias-reduced assessment framework supporting entrepreneurial culture while ensuring consistent evaluation quality",
+        "Automated multi-round technical screening to rapidly identify engineering talent for product expansion initiatives",
+        "Audit trail and governance capabilities supporting IPO-readiness as unicorn progresses toward potential public offering",
+        "Native ATS integration eliminating manual candidate data management across distributed hiring teams"
+      ],
+      "buying_signal_summary": "LeadSquared is a fresh unicorn with $153M in growth capital, operating across 4 geographies with immediate pressure to scale teams for product expansion. Their focus on reducing manual processes and entrepreneurial hiring culture aligns with need for scalable, quality-focused talent acquisition infrastructure.",
+      "recommended_first_move": "Target CEO/Founder or CHRO with a scaling-focused message highlighting how AI hiring infrastructure can accelerate their product roadmap execution while maintaining their entrepreneurial quality standards across multiple geographies.",
+      "signal_tags": [
+        "Unicorn",
+        "Post-Funding",
+        "Multi-Geo",
+        "Hiring at Scale",
+        "Manual Screening",
+        "AI Readiness"
+      ],
+      "messaging_parameters": [
+        {
+          "angle": "Scaling Excellence",
+          "talking_points": [
+            "Recent $153M funding creates immediate pressure to scale quality teams across 4 geographies",
+            "Unicorn-stage companies typically need 3-5x hiring velocity to meet growth expectations",
+            "Product expansion roadmap requires rapid engineering talent acquisition without sacrificing quality",
+            "Multi-geography hiring coordination complexity solved through standardized AI assessment"
+          ]
+        }
+      ],
+      "source_urls": [
+        "https://techcrunch.com/2022/06/21/daily-crunch-with-153m-series-c-leadsquared-becomes-indias-newest-unicorn/",
+        "https://www.leadsquared.com/about/",
+        "https://www.leadsquared.com/careers/"
+      ]
+    },
+    "section_confidence": "HIGH",
+    "primary_sources_count": 2,
+    "secondary_sources_count": 1,
+    "inferred_count": 1
+  },
+  "overall_confidence": "LOW",
+  "sources_used": [
+    {
+      "url": "https://techcrunch.com/2022/06/21/daily-crunch-with-153m-series-c-leadsquared-becomes-indias-newest-unicorn/",
+      "source_type": "SECONDARY",
+      "used_in_sections": [
+        "capacity_gaps",
+        "funding",
+        "offering_fit",
+        "overview",
+        "pain_points",
+        "triggers"
+      ]
+    },
+    {
+      "url": "https://www.leadsquared.com/about/",
+      "source_type": "PRIMARY",
+      "used_in_sections": [
+        "offering_fit",
+        "overview",
+        "pain_points",
+        "scale"
+      ]
+    },
+    {
+      "url": "https://www.leadsquared.com/careers/",
+      "source_type": "PRIMARY",
+      "used_in_sections": [
+        "capacity_gaps",
+        "offering_fit",
+        "overview",
+        "pain_points",
+        "scale"
+      ]
+    }
+  ],
+  "inferred_claims_count": 3,
+  "null_fields_count": 13,
+  "errors": []
+}

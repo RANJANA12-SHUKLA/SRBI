@@ -116,6 +116,22 @@ class MessagingParameter(SRBIBaseModel):
     )
 
 
+class IntelligenceFact(SRBIBaseModel):
+    label: str = ""
+    value: str = ""
+
+
+class OperationalIntelligenceCluster(SRBIBaseModel):
+    tags: list[str] = Field(default_factory=list)
+    facts: list[IntelligenceFact] = Field(default_factory=list)
+
+
+class AdditionalIntelligenceCluster(SRBIBaseModel):
+    title: Optional[str] = None
+    tags: list[str] = Field(default_factory=list)
+    bullets: list[str] = Field(default_factory=list)
+
+
 class ConflictReport(SRBIBaseModel):
     field_name: str = ""
     values_found: list[str] = Field(default_factory=list)
@@ -145,9 +161,14 @@ class InferenceCluster(SRBIBaseModel):
 
 class OverviewCluster(SRBIBaseModel):
     company_name: Optional[str] = None
+    stage: Optional[str] = None
     founded_year: Optional[str] = None
     headquarters: Optional[str] = None
+    address: Optional[str] = None
     industry: Optional[str] = None
+    employees: Optional[str] = None
+    revenue: Optional[str] = None
+    revenue_cagr: Optional[str] = None
     business_description: Optional[str] = None
     source_urls: list[str] = Field(default_factory=list)
 
@@ -197,6 +218,12 @@ class OfferingFitCluster(SRBIBaseModel):
         description="A 2-3 sentence strategic summary connecting the market trigger to the company's specific pain and our product.",
     )
     entry_points: list[EntryPoint] = Field(default_factory=list)
+    operational_intelligence: OperationalIntelligenceCluster = Field(default_factory=OperationalIntelligenceCluster)
+    additional_intelligence: AdditionalIntelligenceCluster = Field(default_factory=AdditionalIntelligenceCluster)
+    what_we_supply: list[str] = Field(default_factory=list)
+    buying_signal_summary: Optional[str] = Field(default=None)
+    recommended_first_move: Optional[str] = Field(default=None)
+    signal_tags: list[str] = Field(default_factory=list)
     messaging_parameters: list[MessagingParameter] = Field(default_factory=list)
     source_urls: list[str] = Field(default_factory=list)
 
@@ -235,7 +262,7 @@ class OfferingFitCluster(SRBIBaseModel):
             for entry in self.entry_points
             if any(keyword in entry.role_title.lower() for keyword in power_keywords)
         ]
-        self.entry_points = (filtered or self.entry_points)[:4]
+        self.entry_points = (filtered or self.entry_points)[:3]
         return self
 
 
@@ -274,7 +301,6 @@ class CompanyReport(SRBIBaseModel):
     pain_points: ReportSection[PainPointCluster]
     recent_triggers: ReportSection[TriggerCluster]
     offering_fit: ReportSection[OfferingFitCluster]
-    conflicts: list[ConflictReport] = Field(default_factory=list)
     overall_confidence: ConfidenceLevel = "LOW"
     sources_used: list[SourceSummary] = Field(default_factory=list)
     inferred_claims_count: int = 0

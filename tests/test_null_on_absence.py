@@ -9,7 +9,11 @@ from schema import ChunkWithMeta
 
 
 def test_extract_funding_returns_nulls_when_context_has_no_funding(monkeypatch):
-    monkeypatch.setattr(extraction, "client", None)
+    def fail_client():
+        raise RuntimeError("client unavailable in unit test")
+
+    monkeypatch.setattr(extraction, "_get_claude_client", fail_client)
+    monkeypatch.setattr(extraction, "_get_gemini_client", fail_client)
     context = [
         ChunkWithMeta(
             text="The company opened a new manufacturing unit and hired a VP of operations.",

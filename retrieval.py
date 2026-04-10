@@ -2,16 +2,16 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 import os
 import re
+import time
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
 
 import numpy as np
-import openai
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from openai import OpenAI, APIError, AuthenticationError, BadRequestError, RateLimitError
 
 from schema import ChunkWithMeta
 
@@ -24,6 +24,11 @@ try:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
 except Exception:  # pragma: no cover - optional dependency during local bootstrap
     RecursiveCharacterTextSplitter = None
+
+try:
+    import tiktoken
+except Exception:  # pragma: no cover - optional dependency during local bootstrap
+    tiktoken = None
 
 logger = logging.getLogger(__name__)
 
@@ -52,15 +57,149 @@ ALWAYS_SECONDARY_PATTERNS = (
     "vccircle.com",
 )
 
+_OPENAI_CLIENT: OpenAI | None = None
+_EMBEDDING_DISABLED_REASON: str | None = None
+_EMBEDDING_CACHE: dict[tuple[str, str], list[float]] = {}
+
+
+class EmbeddingUnavailableError(RuntimeError):
+    pass
+
+
+def _embedding_model_name() -> str:
+    return os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+
+
+def _embedding_dimensions() -> int | None:
+    raw_value = os.getenv("EMBEDDING_DIMENSIONS", "").strip()
+    if not raw_value:
+        return None
+    try:
+        return int(raw_value)
+    except ValueError:
+        logger.warning("Ignoring invalid EMBEDDING_DIMENSIONS value: %s", raw_value)
+        return None
+
+
+def _embedding_batch_item_limit() -> int:
+    raw_value = os.getenv("EMBEDDING_BATCH_MAX_ITEMS", "128").strip()
+    try:
+        return max(1, min(int(raw_value), 2048))
+    except ValueError:
+        return 128
+
+
+def _embedding_batch_token_limit() -> int:
+    raw_value = os.getenv("EMBEDDING_BATCH_MAX_TOKENS", "120000").strip()
+    try:
+        return max(1, min(int(raw_value), 300000))
+    except ValueError:
+        return 120000
+
+
+def _embedding_max_attempts() -> int:
+    raw_value = os.getenv("EMBEDDING_MAX_ATTEMPTS", "2").strip()
+    try:
+        return max(1, int(raw_value))
+    except ValueError:
+        return 2
+
+
+@lru_cache(maxsize=4)
+def _encoding_for_embeddings():
+    if tiktoken is None:
+        return None
+    model = _embedding_model_name()
+    try:
+        return tiktoken.encoding_for_model(model)
+    except Exception:
+        return tiktoken.get_encoding("cl100k_base")
+
+
+def _normalize_embedding_text(text: str) -> str:
+    return text.replace("\r", "\n").strip()
+
+
+def _count_embedding_tokens(text: str) -> int:
+    encoding = _encoding_for_embeddings()
+    if encoding is None:
+        return max(1, len(text) // 4)
+    return max(1, len(encoding.encode(text)))
+
+
+def _truncate_for_embedding(text: str, max_tokens: int = 8191) -> str:
+    encoding = _encoding_for_embeddings()
+    if encoding is None:
+        approx_limit = max_tokens * 4
+        return text[:approx_limit]
+    encoded = encoding.encode(text)
+    if len(encoded) <= max_tokens:
+        return text
+    return encoding.decode(encoded[:max_tokens])
+
+
+def _iter_embedding_batches(texts: list[str]) -> list[tuple[list[str], list[int]]]:
+    item_limit = _embedding_batch_item_limit()
+    token_limit = _embedding_batch_token_limit()
+
+    batches: list[tuple[list[str], list[int]]] = []
+    current_batch: list[str] = []
+    current_indices: list[int] = []
+    current_tokens = 0
+
+    for index, raw_text in enumerate(texts):
+        normalized = _truncate_for_embedding(_normalize_embedding_text(raw_text))
+        token_count = _count_embedding_tokens(normalized)
+
+        would_overflow_items = len(current_batch) >= item_limit
+        would_overflow_tokens = current_batch and (current_tokens + token_count > token_limit)
+        if would_overflow_items or would_overflow_tokens:
+            batches.append((current_batch, current_indices))
+            current_batch = []
+            current_indices = []
+            current_tokens = 0
+
+        current_batch.append(normalized)
+        current_indices.append(index)
+        current_tokens += token_count
+
+    if current_batch:
+        batches.append((current_batch, current_indices))
+
+    return batches
+
+
+def _rate_limit_reason(exc: RateLimitError) -> str:
+    body = getattr(exc, "body", None)
+    if isinstance(body, dict):
+        error = body.get("error")
+        if isinstance(error, dict):
+            code = error.get("code")
+            message = error.get("message")
+            if code and message:
+                return f"{code}: {message}"
+            if message:
+                return str(message)
+    return str(exc)
+
+
+def _is_hard_quota_error(exc: RateLimitError) -> bool:
+    haystack = _rate_limit_reason(exc).lower()
+    return "insufficient_quota" in haystack or "quota" in haystack
+
 def classify_source(url: str, company_domain: str) -> str:
     """Tags a URL as PRIMARY or SECONDARY based on domain matching."""
     if not url:
         return "SECONDARY"
     
-    parsed = urlparse(url.lower())
+    normalized_url = url.lower()
+    parsed = urlparse(normalized_url)
     domain = parsed.netloc
 
     if company_domain and company_domain.lower() in domain:
+        return "PRIMARY"
+
+    if "linkedin.com/company/" in normalized_url:
         return "PRIMARY"
         
     for pattern in PRIMARY_STATIC_PATTERNS:
@@ -89,59 +228,101 @@ def chunk_document(text: str, metadata: dict, chunk_size: int = 500, chunk_overl
         ))
     return chunks
 
-def _fallback_embeddings(texts: list[str]) -> list[list[float]]:
-    """Generates deterministic fake embeddings if OpenAI fails, preventing crashes."""
-    dim = 1536  # Must match text-embedding-3-small so FAISS doesn't break
-    embeddings = []
-    for t in texts:
-        # Create a consistent fake vector based on the text itself
-        np.random.seed(abs(hash(t)) % (2**32))
-        vec = np.random.randn(dim).astype('float32')
-        vec = vec / np.linalg.norm(vec)
-        embeddings.append(vec.tolist())
-    return embeddings
+def _get_openai_client() -> OpenAI:
+    global _OPENAI_CLIENT
+    if _OPENAI_CLIENT is None:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key or api_key.startswith("#"):
+            raise EmbeddingUnavailableError("OPENAI_API_KEY is not set.")
+        _OPENAI_CLIENT = OpenAI(api_key=api_key, max_retries=0)
+    return _OPENAI_CLIENT
 
-@retry(
-    retry=retry_if_exception_type(openai.RateLimitError),
-    wait=wait_exponential(multiplier=2, min=5, max=60), # Wait up to 60s for RPM reset
-    stop=stop_after_attempt(4),
-    reraise=True
-)
-def _call_openai_with_retry(client, batch, model):
-    """Fires the API call with an exponential backoff shock absorber."""
-    return client.embeddings.create(input=batch, model=model)
+
+def _disable_embeddings(reason: str) -> None:
+    global _EMBEDDING_DISABLED_REASON
+    if _EMBEDDING_DISABLED_REASON is None:
+        _EMBEDDING_DISABLED_REASON = reason
+        logger.error("Disabling remote embeddings for this run: %s", reason)
+
+def _call_openai_with_retry(client: OpenAI, batch: list[str], model: str):
+    request_kwargs: dict[str, object] = {
+        "input": batch,
+        "model": model,
+        "encoding_format": "float",
+    }
+    dimensions = _embedding_dimensions()
+    if dimensions is not None:
+        request_kwargs["dimensions"] = dimensions
+
+    max_attempts = _embedding_max_attempts()
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return client.embeddings.create(**request_kwargs)
+        except RateLimitError as exc:
+            if _is_hard_quota_error(exc) or attempt >= max_attempts:
+                raise
+            backoff_seconds = min(float(2 ** (attempt - 1)), 8.0)
+            logger.warning(
+                "Embedding rate limit hit for batch of %d texts; retrying in %.1fs (attempt %d/%d).",
+                len(batch),
+                backoff_seconds,
+                attempt + 1,
+                max_attempts,
+            )
+            time.sleep(backoff_seconds)
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
-    """Production-grade embedding function with batching and graceful fallback."""
-    api_key = os.getenv("OPENAI_API_KEY")
-    
-    # If key is missing or commented out in .env, instantly use fallback
-    if not api_key or api_key.startswith("#"):
-        logger.warning("OpenAI key missing; using local fallback embeddings.")
-        return _fallback_embeddings(texts)
+    """Embed texts with OpenAI and cache results. No local fake fallback is used."""
+    if not texts:
+        return []
 
-    client = openai.OpenAI(api_key=api_key)
-    model = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+    if _EMBEDDING_DISABLED_REASON is not None:
+        raise EmbeddingUnavailableError(_EMBEDDING_DISABLED_REASON)
 
-    all_embeddings = []
-    # BATCHING: Send 50 chunks in ONE request. Bypasses strict RPM limits.
-    batch_size = 50 
+    model = _embedding_model_name()
+    client = _get_openai_client()
 
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i:i + batch_size]
+    results: list[list[float]] = []
+    uncached_texts: list[str] = []
+    uncached_indices: list[int] = []
+    cached_results: dict[int, list[float]] = {}
+
+    for index, text in enumerate(texts):
+        normalized = _truncate_for_embedding(_normalize_embedding_text(text))
+        cache_key = (model, normalized)
+        if cache_key in _EMBEDDING_CACHE:
+            cached_results[index] = _EMBEDDING_CACHE[cache_key]
+        else:
+            uncached_texts.append(normalized)
+            uncached_indices.append(index)
+
+    fetched_vectors: dict[int, list[float]] = {}
+    for batch, relative_indices in _iter_embedding_batches(uncached_texts):
+        batch_indices = [uncached_indices[index] for index in relative_indices]
         try:
             response = _call_openai_with_retry(client, batch, model)
-            all_embeddings.extend([r.embedding for r in response.data])
-        except Exception as e:
-            logger.error(f"OpenAI failed after retries: {e}")
-            logger.warning("Switching to local fallback embeddings to prevent pipeline crash.")
-            
-            # If OpenAI blocks us, seamlessly pad the rest of the file with fake vectors
-            fallback_embs = _fallback_embeddings(texts[i:])
-            all_embeddings.extend(fallback_embs)
-            break # Exit the loop, we are done with OpenAI for this run
+        except RateLimitError as exc:
+            reason = _rate_limit_reason(exc)
+            if _is_hard_quota_error(exc):
+                _disable_embeddings(reason)
+                raise EmbeddingUnavailableError(reason) from exc
+            logger.error("Embedding request failed after retries: %s", reason)
+            raise EmbeddingUnavailableError(reason) from exc
+        except (AuthenticationError, BadRequestError, APIError) as exc:
+            _disable_embeddings(str(exc))
+            raise EmbeddingUnavailableError(str(exc)) from exc
 
-    return all_embeddings
+        for target_index, item, source_text in zip(batch_indices, response.data, batch, strict=False):
+            vector = item.embedding
+            _EMBEDDING_CACHE[(model, source_text)] = vector
+            fetched_vectors[target_index] = vector
+
+    for index in range(len(texts)):
+        if index in cached_results:
+            results.append(cached_results[index])
+        else:
+            results.append(fetched_vectors[index])
+    return results
 
 def build_index(chunks: list[ChunkWithMeta]):
     """Embeds the text and builds the FAISS vector index."""
@@ -153,7 +334,11 @@ def build_index(chunks: list[ChunkWithMeta]):
         return None, []
         
     texts = [c.text for c in chunks]
-    embeddings = embed_texts(texts)
+    try:
+        embeddings = embed_texts(texts)
+    except EmbeddingUnavailableError as exc:
+        logger.error("Embedding build failed: %s", exc)
+        return None, []
     
     if not embeddings:
         return None, []
@@ -208,22 +393,28 @@ def retrieve(
     metadata_store: list[dict],
     top_k: int = 8,
     source_type_filter: Optional[str] = None,
+    query_vector: Optional[list[float]] = None,
 ) -> list[ChunkWithMeta]:
     """Searches the FAISS index for the most relevant text chunks."""
     if index is None or not metadata_store:
         return []
 
-    # Get single query embedding
-    query_embs = embed_texts([query])
-    if not query_embs:
-        return []
-        
-    query_vector = np.array(query_embs, dtype="float32")
-    faiss.normalize_L2(query_vector)
+    if query_vector is None:
+        try:
+            query_embs = embed_texts([query])
+        except EmbeddingUnavailableError:
+            return []
+        if not query_embs:
+            return []
+        query_array = np.array(query_embs, dtype="float32")
+    else:
+        query_array = np.array([query_vector], dtype="float32")
+
+    faiss.normalize_L2(query_array)
     
     # Overfetch logic: Pull more than we need, so we can filter by PRIMARY if requested
     overfetch = max(top_k * 3, top_k)
-    distances, indices = index.search(query_vector, min(overfetch, len(metadata_store)))
+    distances, indices = index.search(query_array, min(overfetch, len(metadata_store)))
 
     results: list[ChunkWithMeta] = []
     for idx in indices[0]:
