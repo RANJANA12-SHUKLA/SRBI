@@ -16,6 +16,11 @@ from openai import OpenAI, APIError, AuthenticationError, BadRequestError, RateL
 from schema import ChunkWithMeta
 
 try:
+    from utils.secrets_manager import get_secret
+except ImportError:  # pragma: no cover - optional in local/dev environments
+    get_secret = None
+
+try:
     import faiss  # type: ignore
 except Exception:  # pragma: no cover - optional dependency during local bootstrap
     faiss = None
@@ -64,6 +69,17 @@ _EMBEDDING_CACHE: dict[tuple[str, str], list[float]] = {}
 
 class EmbeddingUnavailableError(RuntimeError):
     pass
+
+
+def _load_api_key(secret_name: str) -> str:
+    if get_secret is not None:
+        try:
+            secret_value = get_secret(secret_name)
+            if secret_value:
+                return str(secret_value)
+        except Exception as exc:
+            logger.warning("Secret manager lookup failed for %s, falling back to environment: %s", secret_name, exc)
+    return os.getenv(secret_name, "")
 
 
 def _embedding_model_name() -> str:
@@ -231,7 +247,7 @@ def chunk_document(text: str, metadata: dict, chunk_size: int = 500, chunk_overl
 def _get_openai_client() -> OpenAI:
     global _OPENAI_CLIENT
     if _OPENAI_CLIENT is None:
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = _load_api_key("OPENAI_API_KEY")
         if not api_key or api_key.startswith("#"):
             raise EmbeddingUnavailableError("OPENAI_API_KEY is not set.")
         _OPENAI_CLIENT = OpenAI(api_key=api_key, max_retries=0)

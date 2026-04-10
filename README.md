@@ -6,6 +6,9 @@ The parent application should call the orchestrator with one company JSON file a
 Use [srbi_orchestrator.py](srbi_orchestrator.py):
 
 ```bash
+pip install typer python-dotenv pydantic pydantic-settings langgraph anthropic instructor google-generativeai beautifulsoup4 faiss-cpu numpy openai tenacity langchain-text-splitters requests 
+```
+```bash
 python srbi_orchestrator.py --company-json ./data/leadsquared.json --product-file ./products/interviewgod.md --output-dir ./outputs
 ```
 

@@ -33,6 +33,11 @@ from schema import (
 )
 from retrieval import format_context_chunks
 
+try:
+    from utils.secrets_manager import get_secret
+except ImportError:  # pragma: no cover - optional in local/dev environments
+    get_secret = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -119,10 +124,21 @@ _claude_client = None
 _gemini_client = None
 
 
+def _load_api_key(secret_name: str) -> str:
+    if get_secret is not None:
+        try:
+            secret_value = get_secret(secret_name)
+            if secret_value:
+                return str(secret_value)
+        except Exception as exc:
+            logger.warning("Secret manager lookup failed for %s, falling back to environment: %s", secret_name, exc)
+    return os.getenv(secret_name, "")
+
+
 def _get_claude_client():
     global _claude_client
     if _claude_client is None:
-        raw_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        raw_client = anthropic.Anthropic(api_key=_load_api_key("ANTHROPIC_API_KEY"))
         _claude_client = instructor.from_anthropic(raw_client)
     return _claude_client
 
@@ -134,7 +150,7 @@ def _get_gemini_client():
             genai = import_module("google.generativeai")
         except Exception as exc:
             raise RuntimeError("google-generativeai is not installed; Gemini fallback unavailable") from exc
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        genai.configure(api_key=_load_api_key("GEMINI_API_KEY"))
         raw_client = genai.GenerativeModel(GEMINI_MODEL)
         _gemini_client = instructor.from_gemini(
             client=raw_client,
