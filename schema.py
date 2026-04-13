@@ -194,6 +194,8 @@ class ScaleCluster(SRBIBaseModel):
     facilities: Optional[str] = None
     geographies: list[str] = Field(default_factory=list)
     source_urls: list[str] = Field(default_factory=list)
+    expansion_plans: list[str] = Field(default_factory=list, description="Stated plans for future headcount, facility, or geographic growth.")
+    source_urls: list[str] = Field(default_factory=list)
 
 
 class CapacityGapCluster(SRBIBaseModel):
@@ -305,4 +307,6 @@ class CompanyReport(SRBIBaseModel):
     sources_used: list[SourceSummary] = Field(default_factory=list)
     inferred_claims_count: int = 0
     null_fields_count: int = 0
+    conflicts: list[ConflictReport] = Field(default_factory=list)
+    prospect_tier: Optional[Literal["Tier 1 Immediate", "Tier 2 Strategic", "Tier 3 Nurture", "Disqualified"]] = Field(default=None)
     errors: list[str] = Field(default_factory=list)
